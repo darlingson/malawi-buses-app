@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +28,11 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val busViewModel by viewModels<BusViewModel> ()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getData()
@@ -59,8 +63,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel: BusViewModel) {
     val vm: BusViewModel = viewModel
-    val buses by vm.fetchBuses() as StateFlow<List<Bus>>
-    viewModel.fetchBuses()
 }
     private fun getData(){
         lifecycleScope.launch {
