@@ -1,16 +1,23 @@
 package com.codeshinobi.malawibuses
 
+import BusViewModel
+import android.app.Application
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.codeshinobi.malawibuses.ui.theme.MalawiBusesTheme
 import io.github.jan.supabase.SupabaseClient
@@ -18,6 +25,8 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,17 +34,34 @@ class MainActivity : ComponentActivity() {
         getData()
         setContent {
             MalawiBusesTheme {
-                // A surface container using the 'background' color from the theme
+                val owner = LocalViewModelStoreOwner.current
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    owner?.let {
+                        val viewModel:BusViewModel = viewModel(
+                            it,
+                            "BusViewModel",
+                            BusViewModelFactory(
+                                LocalContext.current.applicationContext as Application
+                            )
+                        )
+                        Scaffold {
+//                            Greeting("Android")
+                            MainScreen(Modifier.padding(it), viewModel)
+                        }
+                    }
                 }
             }
         }
     }
-
+@Composable
+fun MainScreen(modifier: Modifier = Modifier, viewModel: BusViewModel) {
+    val vm: BusViewModel = viewModel
+    val buses by vm.fetchBuses() as StateFlow<List<Bus>>
+    viewModel.fetchBuses()
+}
     private fun getData(){
         lifecycleScope.launch {
             val client = getClient()
@@ -67,5 +93,12 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 fun GreetingPreview() {
     MalawiBusesTheme {
         Greeting("Android")
+    }
+}
+
+
+class BusViewModelFactory(val application: Application) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return BusViewModel(application) as T
     }
 }
