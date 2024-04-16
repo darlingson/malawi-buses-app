@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
     private val busViewModel by viewModels<BusViewModel> ()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        getData()
+        getClient()
         setContent {
             MalawiBusesTheme {
                 val owner = LocalViewModelStoreOwner.current
@@ -43,44 +43,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    owner?.let {
-                        val viewModel:BusViewModel = viewModel(
-                            it,
-                            "BusViewModel",
-                            BusViewModelFactory(
-                                LocalContext.current.applicationContext as Application
-                            )
-                        )
-                        Scaffold {
-//                            Greeting("Android")
-                            MainScreen(Modifier.padding(it), viewModel)
-                        }
+                    Text(text = "Android")
                     }
                 }
             }
         }
-    }
-@Composable
-fun MainScreen(modifier: Modifier = Modifier, viewModel: BusViewModel) {
-    val vm: BusViewModel = viewModel
-}
-    private fun getData(){
-        lifecycleScope.launch {
-            val client = getClient()
-            val supabaseResponse = client.postgrest["buses"].select()
-            val data = supabaseResponse.decodeList<Bus>()
-            Log.e("DATA:", data.toString())
-        }
-    }
     private fun getClient():SupabaseClient{
         return createSupabaseClient(
             supabaseUrl = SensitiveData.DATABASE_URL,
             supabaseKey = SensitiveData.API_KEY
         ){
             install(Postgrest)
-        }
+        } }
     }
-}
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -99,8 +75,3 @@ fun GreetingPreview() {
 }
 
 
-class BusViewModelFactory(val application: Application) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return BusViewModel(application) as T
-    }
-}
